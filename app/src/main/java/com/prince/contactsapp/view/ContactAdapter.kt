@@ -92,7 +92,7 @@ class ContactAdapter(
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val contact = contactsList[position]
-                    clickListener.onContactClick(contact)
+                    clickListener.onContactClick(contact, context)
                 }
             }
             contactFavoriteImageView.setOnClickListener {

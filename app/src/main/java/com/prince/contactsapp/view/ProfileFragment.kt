@@ -83,11 +83,11 @@ class ProfileFragment : Fragment(), ItemClickListener {
         displayContactList()
 
         viewModel.getNavigateToNewActivity()?.observe(viewLifecycleOwner, Observer {
-/*            // Navigate to the new activity
+            // Navigate to the new activity
             // Create an Intent to start the new activity
             val intent = Intent(activity, AddViewEditProfileActivity::class.java)
             // Start the new activity
-            startActivity(intent)*/
+            startActivity(intent)
         })
 
         viewModel.selectedProfile.observe(viewLifecycleOwner, Observer { selectedProfile ->
@@ -141,20 +141,20 @@ class ProfileFragment : Fragment(), ItemClickListener {
     }
 
 
-    override fun onContactClick(contact: Contact) {
+    override fun onContactClick(contact: Contact, context: Context) {
 
     }
 
     override fun onProfileClick(profile: Profile, context: Context) {
 
-        /*// Create an Intent to open the EditContactActivity
+        // Create an Intent to open the EditContactActivity
         val intent = Intent(requireContext(), AddViewEditProfileActivity::class.java)
         // Pass the contact data to the EditContactActivity
 
         intent.putExtra("profile_id", profile.id.toString())
         //Toast.makeText(requireContext(), "${profile.id}", Toast.LENGTH_SHORT).show()
         // Start the EditContactActivity
-        startActivity(intent)*/
+        startActivity(intent)
     }
 
     override fun onProfileLongClick(profile: Profile) {

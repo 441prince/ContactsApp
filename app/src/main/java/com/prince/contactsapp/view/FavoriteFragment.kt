@@ -1,6 +1,7 @@
 package com.prince.contactsapp.view
 
 import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -80,8 +81,6 @@ class FavoriteFragment : Fragment(), ItemClickListener {
 
         adapter = FavoriteAdapter(requireContext(), viewPager, ArrayList(), this, contactDao, viewModel)
         binding.favoriteRecyclerView.adapter = adapter
-
-
     }
 
     private fun displayContactList() {
@@ -91,16 +90,16 @@ class FavoriteFragment : Fragment(), ItemClickListener {
         })
     }
 
-    override fun onContactClick(contact: Contact) {
+    override fun onContactClick(contact: Contact, context: Context) {
 
-       /* // Create an Intent to open the EditContactActivity
+        // Create an Intent to open the EditContactActivity
         val intent = Intent(requireContext(), ViewOrEditContactActivity::class.java)
 
         // Pass the contact data to the EditContactActivity
         intent.putExtra("contact_phone", contact.phoneNumber)
 
         // Start the EditContactActivity
-        startActivity(intent)*/
+        startActivity(intent)
     }
 
     override fun onProfileClick(profile: Profile, context: Context) {

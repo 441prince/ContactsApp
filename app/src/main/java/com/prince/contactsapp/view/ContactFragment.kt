@@ -82,7 +82,6 @@ class ContactFragment : Fragment(), ItemClickListener {
         binding.recyclerview.adapter = adapter
 
         viewModel.getNavigateToNewActivity()?.observe(viewLifecycleOwner, Observer {
-/*
             // Navigate to the new activity
             // Create an Intent to start the new activity
             val intent = Intent(activity, AddNewContactActivity::class.java)
@@ -90,7 +89,6 @@ class ContactFragment : Fragment(), ItemClickListener {
             intent.putExtra("key", "value")
             // Start the new activity
             startActivity(intent)
-*/
 
         })
 
@@ -195,16 +193,16 @@ class ContactFragment : Fragment(), ItemClickListener {
 
     }
 
-    override fun onContactClick(contact: Contact) {
+    override fun onContactClick(contact: Contact, context: Context) {
 
-        /*// Create an Intent to open the EditContactActivity
+        // Create an Intent to open the EditContactActivity
         val intent = Intent(requireContext(), ViewOrEditContactActivity::class.java)
 
         // Pass the contact data to the EditContactActivity
         intent.putExtra("contact_phone", contact.phoneNumber)
 
         // Start the EditContactActivity
-        startActivity(intent)*/
+        startActivity(intent)
     }
 
     override fun onProfileClick(profile: Profile, context: Context) {

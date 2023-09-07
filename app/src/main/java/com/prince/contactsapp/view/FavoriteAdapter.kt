@@ -85,7 +85,7 @@ class FavoriteAdapter(
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val contact = favoriteContactList[position]
-                    clickListener.onContactClick(contact)
+                    clickListener.onContactClick(contact, context)
                 }
             }
             contactFavoriteImageView.setOnClickListener {

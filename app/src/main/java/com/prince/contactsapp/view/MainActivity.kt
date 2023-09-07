@@ -21,10 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.content.ContentProviderCompat.requireContext
 import com.prince.contactsapp.models.AppDatabase
 import com.prince.contactsapp.models.Profile
 import com.prince.contactsapp.models.ProfileRepository
@@ -43,6 +41,8 @@ import com.prince.contactsapp.models.Contact
 import com.prince.contactsapp.models.ContactRepository
 import com.prince.contactsapp.viewmodel.ContactViewModel
 import com.prince.contactsapp.viewmodel.ContactViewModelFactory
+import com.prince.contactsapp.viewmodel.FavoriteViewModel
+import com.prince.contactsapp.viewmodel.FavoriteViewModelFactory
 import com.prince.contactsapp.viewmodel.ProfileViewModelFactory
 
 
@@ -51,7 +51,10 @@ class MainActivity : ComponentActivity(), ItemClickListener {
 
     private lateinit var profileViewModel: ProfileViewModel
     private lateinit var contactViewModel: ContactViewModel
+    private lateinit var favoriteViewModel: FavoriteViewModel
     private val profileList: ArrayList<Profile> = ArrayList() // Initialize an empty list
+    private val contactList: ArrayList<Contact> = ArrayList()
+    private val favoriteContactList: ArrayList<Contact> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,11 +65,18 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         val contactRepository = ContactRepository(contactDao)
         val profileViewModelFactory = ProfileViewModelFactory(profileRepository, contactRepository)
         val contactViewModelFactory = ContactViewModelFactory(contactRepository, profileRepository)
-        profileViewModel = ViewModelProvider(this, profileViewModelFactory).get(ProfileViewModel::class.java)
-        contactViewModel = ViewModelProvider(this, contactViewModelFactory).get(ContactViewModel::class.java)
+        val favoriteViewModelFactory =
+            FavoriteViewModelFactory(contactRepository, profileRepository)
+        profileViewModel =
+            ViewModelProvider(this, profileViewModelFactory).get(ProfileViewModel::class.java)
+        contactViewModel =
+            ViewModelProvider(this, contactViewModelFactory).get(ContactViewModel::class.java)
+        favoriteViewModel =
+            ViewModelProvider(this, favoriteViewModelFactory).get(FavoriteViewModel::class.java)
 
         // Define your default profile
-        val defaultProfile = Profile(id = 1, name = "Default Profile", isDefault = true, imageUri = null)
+        val defaultProfile =
+            Profile(id = 1, name = "Default Profile", isDefault = true, imageUri = null)
         profileViewModel.addDefaultProfile(defaultProfile)
 
 
@@ -79,17 +89,49 @@ class MainActivity : ComponentActivity(), ItemClickListener {
             profileList.addAll(profiles)
         })
 
+        contactViewModel.profileContacts.observe(this, Observer { contacts ->
+            contactList.clear()
+            contactList.addAll(contacts)
+        })
+
+        // Observe searchResults LiveData
+        contactViewModel.searchResults.observe(this, Observer { searchResults ->
+            contactList.clear()
+            contactList.addAll(searchResults)
+        })
+
+        favoriteViewModel.favoriteContacts.observe(this, Observer { favoriteContacts ->
+            favoriteContactList.clear()
+            favoriteContactList.addAll(favoriteContacts)
+        })
+
         setContent {
             ContactsAppTheme {
                 // Create a NavHostController
                 val navController = rememberNavController()
-                MainActivityContent(navController, profileList, profileViewModel, this)
+                MainActivityContent(
+                    navController,
+                    profileList,
+                    profileViewModel,
+                    this,
+                    contactList,
+                    contactViewModel,
+                    favoriteContactList,
+                    favoriteViewModel
+                )
             }
         }
     }
 
-    override fun onContactClick(contact: Contact) {
-        TODO("Not yet implemented")
+    override fun onContactClick(contact: Contact, context: Context) {
+        // Create an Intent to open the EditContactActivity
+        val intent = Intent(context, ViewOrEditContactActivity::class.java)
+
+        // Pass the contact data to the EditContactActivity
+        intent.putExtra("contact_phone", contact.phoneNumber)
+
+        // Start the EditContactActivity
+        startActivity(intent)
     }
 
     override fun onProfileClick(profile: Profile, context: Context) {
@@ -113,7 +155,12 @@ fun MainActivityContent(
     navController: NavHostController,
     profiles: List<Profile>,
     profileViewModel: ProfileViewModel,
-    mainActivity: MainActivity) {
+    mainActivity: MainActivity,
+    contacts: List<Contact>,
+    contactViewModel: ContactViewModel,
+    favoriteContacts: List<Contact>,
+    favoriteViewModel: FavoriteViewModel
+) {
     ContactsAppTheme {
         // Set up the NavHost with tabs
         NavHost(
@@ -129,10 +176,10 @@ fun MainActivityContent(
                 )*/
             }
             composable("contacts") {
-                ContactTab(navController)
+                //ContactTab(navController)
             }
             composable("favorites") {
-                FavoriteTab(navController)
+                //FavoriteTab(navController)
             }
 
             composable("addProfile") {
@@ -140,7 +187,16 @@ fun MainActivityContent(
             }
         }
 
-        MainContent(navController, profiles, profileViewModel, mainActivity)
+        MainContent(
+            navController,
+            profiles,
+            profileViewModel,
+            mainActivity,
+            contacts,
+            contactViewModel,
+            favoriteContacts,
+            favoriteViewModel
+        )
     }
 }
 
@@ -150,7 +206,11 @@ fun MainContent(
     navController: NavController,
     profiles: List<Profile>,
     profileViewModel: ProfileViewModel,
-    mainActivity: MainActivity
+    mainActivity: MainActivity,
+    contacts: List<Contact>,
+    contactViewModel: ContactViewModel,
+    favoriteContacts: List<Contact>,
+    favoriteViewModel: FavoriteViewModel
 ) {
     ConstraintLayout(
         modifier = Modifier.fillMaxSize()
@@ -192,7 +252,11 @@ fun MainContent(
             indicator = { tabPositions ->
                 TabRowDefaults.Indicator(
                     color = Color.White,
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[tabTitles.indexOf(currentRoute)])
+                    modifier = Modifier.tabIndicatorOffset(
+                        tabPositions[tabTitles.indexOf(
+                            currentRoute
+                        )]
+                    )
                 )
             },
             tabs = {
@@ -220,22 +284,25 @@ fun MainContent(
             //backgroundColor = MaterialTheme.colorScheme.primary.
         )
 
-        val tabContentGuideline = createGuidelineFromTop(0.15f) // Adjust the top guideline as needed
+        val tabContentGuideline =
+            createGuidelineFromTop(0.15f) // Adjust the top guideline as needed
         // Content for the selected tab
         Column(
-           /* modifier = Modifier
+            /* modifier = Modifier
+                 .constrainAs(content) {
+                     top.linkTo(tabContentGuideline) // Place content below the TabRow
+                     start.linkTo(parent.start)
+                     end.linkTo(parent.end)
+                     //bottom.linkTo(parent.bottom) // Align content with the bottom of the screen
+                 }*/
+            modifier = Modifier
                 .constrainAs(content) {
-                    top.linkTo(tabContentGuideline) // Place content below the TabRow
+                    top.linkTo(tabContentGuideline)
                     start.linkTo(parent.start)
                     end.linkTo(parent.end)
-                    //bottom.linkTo(parent.bottom) // Align content with the bottom of the screen
-                }*/
-            modifier = Modifier.constrainAs(content) {
-                top.linkTo(tabContentGuideline)
-                start.linkTo(parent.start)
-                end.linkTo(parent.end)
-                //bottom.linkTo(parent.bottom)
-            }.fillMaxSize(),
+                    //bottom.linkTo(parent.bottom)
+                }
+                .fillMaxSize(),
             //verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -243,29 +310,21 @@ fun MainContent(
                 "profiles" -> {
                     ProfileTab(navController, profiles, profileViewModel, mainActivity)
                 }
+
                 "contacts" -> {
-                    ContactTab(navController)
+                    ContactTab(navController, profiles, contacts, contactViewModel, mainActivity)
                 }
+
                 "favorites" -> {
-                    FavoriteTab(navController)
+                    FavoriteTab(navController, profiles, favoriteContacts, favoriteViewModel, mainActivity)
                 }
+
                 else -> {
                     // Handle other cases or leave it empty
                 }
             }
         }
     }
-}
-
-
-@Composable
-fun ContactTab(navController: NavController) {
-    Text("Contacts Tab Content")
-}
-
-@Composable
-fun FavoriteTab(navController: NavController) {
-    Text("Favorites Tab Content")
 }
 
 @Preview(showBackground = true)

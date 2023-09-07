@@ -1,5 +1,6 @@
 package com.prince.contactsapp.view
 
+import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -102,7 +103,7 @@ class FavoriteFragment : Fragment(), ItemClickListener {
         startActivity(intent)*/
     }
 
-    override fun onProfileClick(profile: Profile) {
+    override fun onProfileClick(profile: Profile, context: Context) {
 
     }
 

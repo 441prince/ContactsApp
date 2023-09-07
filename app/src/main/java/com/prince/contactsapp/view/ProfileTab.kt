@@ -1,7 +1,10 @@
 package com.prince.contactsapp.view
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,26 +30,44 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.Dp
-import androidx.constraintlayout.compose.ConstraintLayout
-
+import androidx.core.content.ContextCompat.startActivity
+import coil.compose.rememberAsyncImagePainter
+import coil.compose.rememberImagePainter
 import com.prince.contactsapp.R
 import com.prince.contactsapp.models.Profile
 import com.prince.contactsapp.viewmodel.ProfileViewModel
+import kotlinx.coroutines.launch
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.runtime.*
+import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.time.milliseconds
 
 @Composable
 fun ProfileTab(
@@ -82,6 +103,8 @@ fun ProfileList(
 
     val ht: Int = getScreenHeightInDp(LocalContext.current)
     val heightInDp = ht.dp - 100.dp
+    val maxProfilesAllowed = 3 // Set the maximum number of profiles allowed
+    val context = LocalContext.current
     Log.d("Screen Height Prince", "Height = $ht.")
     Box(
         modifier = Modifier
@@ -99,16 +122,26 @@ fun ProfileList(
         ) {
             itemsIndexed(profiles) { index, profile ->
                 ProfileCard(profile = profile, itemClickListener = itemClickListener)
-                ProfileCard(profile = profile, itemClickListener = itemClickListener)
-                ProfileCard(profile = profile, itemClickListener = itemClickListener)
-                ProfileCard(profile = profile, itemClickListener = itemClickListener)
             }
         }
 
-        // Floating action button should be here, inside the Box
+
         FloatingActionButton(
             onClick = {
-                // Handle FloatingActionButton click
+                if (profiles.size < maxProfilesAllowed) {
+                    // Open the new activity with extras
+                    val intent = Intent(context, AddViewEditProfileActivity::class.java)
+                    /*// Put your extras here
+                    intent.putExtra("key1", "value1")
+                    intent.putExtra("key2", "value2")*/
+                    // Add more extras if needed
+                    startActivity(context, intent, null)
+                    //(context as Activity).finish()
+                } else {
+                    // Show a toast message if there are too many profiles
+                    Toast.makeText(context,
+                        "Maximum of three profiles allowed.", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier
                 .padding(end = 20.dp, bottom = 40.dp)
@@ -125,16 +158,40 @@ fun ProfileList(
 @Composable
 fun ProfileCard(profile: Profile, itemClickListener: ItemClickListener) {
 
+    // State to track whether a long-press is in progress
+    var isLongPressActive by remember { mutableStateOf(false) }
+
     var containerColor: Color
+    val context = LocalContext.current
     if (profile.isSelected) {
         containerColor = Color(216, 221, 223, 100)
 
     } else {
         containerColor = Color.Transparent
     }
+    val imageUri = profile.imageUri
+
+    Log.d("ProfileCard before", "Image URI: $imageUri")
+    val imagePainter = if (imageUri != null  && imageUri != "null") {
+        Log.d("CardView if", " ${profile.imageUri} , ${profile.name}")
+        rememberAsyncImagePainter(model = imageUri) // Load the image from URI
+
+    } else {
+        // Use a default image model (not null)
+        Log.d("CardView else", " ${profile.imageUri} , ${profile.name}")
+        rememberAsyncImagePainter(model = R.drawable.contactblack)
+    }
+
+    val interactionSource = remember { MutableInteractionSource() }
 
     Card(
         modifier = Modifier
+            .clickable {
+                // Handle regular click
+                if (!isLongPressActive) {
+                    itemClickListener.onProfileClick(profile, context)
+                }
+            }
             .padding(10.dp)
             .size(200.dp, 200.dp),
         colors = CardColors(
@@ -151,23 +208,6 @@ fun ProfileCard(profile: Profile, itemClickListener: ItemClickListener) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Check if profile.imageUri is null
-            val imageResourceId = if (profile.imageUri != null) {
-                // Load the image from drawable resource based on profile.imageUri
-                LocalContext.current.resources.getIdentifier(
-                    profile.imageUri,
-                    "drawable",
-                    LocalContext.current.packageName
-                )
-            } else {
-                // Use a default image resource ID when profile.imageUri is null
-                R.drawable.contactblack // Replace with your default image resource ID
-            }
-
-            // Add a debug log to check the image resource ID
-            Log.d("ProfileCard", "Image Resource ID: $imageResourceId")
-
-            val imagePainter = painterResource(id = imageResourceId)
 
             // Display the image
             Image(
@@ -179,7 +219,7 @@ fun ProfileCard(profile: Profile, itemClickListener: ItemClickListener) {
                     .clip(CircleShape)
                     .border(
                         width = 2.dp, // Border width
-                        color = Color.Blue, // Border color
+                        color = MaterialTheme.colorScheme.primary, // Border color
                         shape = CircleShape
                     )
                     .background(MaterialTheme.colorScheme.primary)

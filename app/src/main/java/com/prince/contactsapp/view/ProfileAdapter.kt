@@ -86,7 +86,7 @@ class ProfileAdapter(
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     val profile = profileList[position]
-                    clickListener.onProfileClick(profile)
+                    clickListener.onProfileClick(profile, context)
                 }
             }
 

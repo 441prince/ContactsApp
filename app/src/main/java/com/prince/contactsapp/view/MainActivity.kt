@@ -1,5 +1,7 @@
 package com.prince.contactsapp.view
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -19,8 +21,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.core.content.ContentProviderCompat.requireContext
 import com.prince.contactsapp.models.AppDatabase
 import com.prince.contactsapp.models.Profile
 import com.prince.contactsapp.models.ProfileRepository
@@ -88,7 +92,14 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         TODO("Not yet implemented")
     }
 
-    override fun onProfileClick(profile: Profile) {
+    override fun onProfileClick(profile: Profile, context: Context) {
+        val intent = Intent(context, AddViewEditProfileActivity::class.java)
+        // Pass the contact data to the EditContactActivity
+
+        intent.putExtra("profile_id", profile.id.toString())
+        //Toast.makeText(requireContext(), "${profile.id}", Toast.LENGTH_SHORT).show()
+        // Start the EditContactActivity
+        startActivity(intent)
 
     }
 

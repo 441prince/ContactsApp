@@ -1,5 +1,6 @@
 package com.prince.contactsapp.view
 
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
@@ -144,7 +145,7 @@ class ProfileFragment : Fragment(), ItemClickListener {
 
     }
 
-    override fun onProfileClick(profile: Profile) {
+    override fun onProfileClick(profile: Profile, context: Context) {
 
         /*// Create an Intent to open the EditContactActivity
         val intent = Intent(requireContext(), AddViewEditProfileActivity::class.java)

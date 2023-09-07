@@ -1,5 +1,6 @@
 package com.prince.contactsapp.view
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -206,7 +207,7 @@ class ContactFragment : Fragment(), ItemClickListener {
         startActivity(intent)*/
     }
 
-    override fun onProfileClick(profile: Profile) {
+    override fun onProfileClick(profile: Profile, context: Context) {
     }
 
     override fun onProfileLongClick(profile: Profile) {

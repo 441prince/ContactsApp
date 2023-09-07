@@ -1,4 +1,4 @@
-package com.prince.contactsapp.ui.theme
+package com.prince.contactsapp.view.ui.theme
 
 import android.app.Activity
 import android.os.Build

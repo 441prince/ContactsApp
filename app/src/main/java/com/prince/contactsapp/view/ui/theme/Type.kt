@@ -1,4 +1,4 @@
-package com.prince.contactsapp.ui.theme
+package com.prince.contactsapp.view.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

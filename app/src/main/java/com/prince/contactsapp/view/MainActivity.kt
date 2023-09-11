@@ -131,9 +131,9 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         favoriteViewModel.updatedFavoriteContactList.observe(this, Observer { updatedFavoriteContacts ->
             favoriteContactList.clear()
             favoriteContactList.addAll(updatedFavoriteContacts)
-            //updateRefreshState(refreshState)
-            Log.d("updatedFavoriteContactList" ," updatedFavoriteContactList.observe: ${updatedFavoriteContacts.size} ")
-            Toast.makeText(this, "updated profile Favorite contact: ${updatedFavoriteContacts.size}", Toast.LENGTH_SHORT).show()
+            updateRefreshState(refreshState)
+            Log.d("updatedFavoriteContactList" ," updatedFavoriteContactList.observe: ${updatedFavoriteContacts.size} ${favoriteContactList} ")
+            //Toast.makeText(this, "Favorite contact: ${updatedFavoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()
         })
 
         setContent {
@@ -194,7 +194,8 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         //contactViewModel.getContactsUpdatedForProfile(favoriteContact.profileId)
 //        updateRefreshState(refreshState)
 //        favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
-        Toast.makeText(this, "onFavoriteContactFavIconClick : ${favoriteContact.profileId} ", Toast.LENGTH_SHORT).show()
+        //Toast.makeText(this, "onFavoriteContactFavIconClick : ${favoriteContact.profileId} ", Toast.LENGTH_SHORT).show()
+        //updateRefreshState(refreshState)
 
     }
 

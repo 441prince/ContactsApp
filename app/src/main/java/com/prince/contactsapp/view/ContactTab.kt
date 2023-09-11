@@ -2,6 +2,7 @@ package com.prince.contactsapp.view
 
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -41,14 +41,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.core.content.ContextCompat.startActivity
-import coil.compose.AsyncImagePainter.State.Empty.painter
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.prince.contactsapp.R
@@ -84,7 +81,6 @@ fun ContactList(
 
     val ht: Int = getScreenHeightInDp(LocalContext.current)
     val heightInDp = ht.dp - 100.dp
-    val maxProfilesAllowed = 3 // Set the maximum number of profiles allowed
     val context = LocalContext.current
     Log.d("Screen Height Prince", "Height = $ht.")
     Box(
@@ -131,9 +127,7 @@ fun ContactList(
 @Composable
 fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactViewModel: ContactViewModel) {
 
-    // State to track whether a long-press is in progress
-    var isLongPressActive by remember { mutableStateOf(false) }
-    var isFavorite by remember { mutableStateOf(false) }
+    var isFavorite by remember { mutableStateOf(contact.isFavorite) }
 
     val context = LocalContext.current
     val imageUri = contact.imageUri
@@ -152,7 +146,10 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .clickable {
+                itemClickListener.onContactClick(contact, context)
+            }
+            .padding(1.dp),
         colors = CardColors(
             containerColor = Color.White,
             contentColor = Color.Black,
@@ -169,7 +166,7 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
         ) {
             // CircleImageView
             Image(
-                painter = rememberImagePainter(data = contact.imageUri ?: R.drawable.contacts),
+                painter = imagePainter,   //rememberAsyncImagePainter(model = contact.imageUri ?: R.drawable.contactblack),
                 contentDescription = "Contact Image",
                 modifier = Modifier
                     .size(80.dp)
@@ -201,7 +198,7 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
 
             // ImageButton
             Image(
-                painter = painterResource(id = if (contact.isFavorite) R.drawable.filledheart else R.drawable.emptyheart),
+                painter = painterResource(id = if (isFavorite) R.drawable.filledheart else R.drawable.emptyheart),
                 contentDescription = "Favorite",
                 modifier = Modifier
                     .size(40.dp)
@@ -210,6 +207,8 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
                     .clickable {
                         //itemClickListener.onFavoriteButtonClick()
                         contact.isFavorite = !contact.isFavorite
+                        isFavorite = !isFavorite
+                        //Toast.makeText(context, "$isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
                         contactViewModel.updateContactAndNotify(contact)
                         //painter = painterResource(id = R.drawable.filledheart)
                     }

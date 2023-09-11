@@ -173,13 +173,17 @@ class ProfileFragment : Fragment(), ItemClickListener {
             return
         }
         // Select the clicked profile
-        viewModel.selectProfile(profile.id, viewPager)
+//      viewModel.selectProfile(profile.id, viewPager)
         adapter.notifyDataSetChanged()
 
         // Implement other actions as needed
 
         //Toast.makeText(requireContext(), "Long-pressed profile: ${profile.name}", Toast.LENGTH_SHORT).show()
         //viewPager.adapter?.notifyDataSetChanged()
+
+    }
+
+    override fun onFavoriteContactFavIconClick(favoriteContact: Contact, context: Context) {
 
     }
 

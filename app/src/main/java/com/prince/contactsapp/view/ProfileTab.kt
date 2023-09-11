@@ -1,6 +1,5 @@
 package com.prince.contactsapp.view
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
@@ -23,16 +22,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,29 +41,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.content.ContextCompat.startActivity
 import coil.compose.rememberAsyncImagePainter
-import coil.compose.rememberImagePainter
 import com.prince.contactsapp.R
 import com.prince.contactsapp.models.Profile
 import com.prince.contactsapp.viewmodel.ProfileViewModel
-import kotlinx.coroutines.launch
-import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
-import androidx.compose.foundation.gestures.detectTransformGestures
-import androidx.compose.runtime.*
-import androidx.compose.ui.composed
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.platform.LocalDensity
-import kotlin.time.milliseconds
 
 @Composable
 fun ProfileTab(
@@ -139,8 +122,7 @@ fun ProfileList(
                     //(context as Activity).finish()
                 } else {
                     // Show a toast message if there are too many profiles
-                    Toast.makeText(context,
-                        "Maximum of three profiles allowed.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Maximum of three profiles allowed.", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
@@ -172,7 +154,7 @@ fun ProfileCard(profile: Profile, itemClickListener: ItemClickListener) {
     val imageUri = profile.imageUri
 
     Log.d("ProfileCard before", "Image URI: $imageUri")
-    val imagePainter = if (imageUri != null  && imageUri != "null") {
+    val imagePainter = if (imageUri != null && imageUri != "null") {
         Log.d("CardView if", " ${profile.imageUri} , ${profile.name}")
         rememberAsyncImagePainter(model = imageUri) // Load the image from URI
 
@@ -186,12 +168,24 @@ fun ProfileCard(profile: Profile, itemClickListener: ItemClickListener) {
 
     Card(
         modifier = Modifier
-            .clickable {
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onLongPress = {
+                        //containerColor = Color(216, 221, 223, 100)
+                        itemClickListener.onProfileLongClick(profile)
+
+                    },
+                    onTap = {
+                        itemClickListener.onProfileClick(profile, context)
+                    }
+                )
+            }
+            /*.clickable {
                 // Handle regular click
                 if (!isLongPressActive) {
                     itemClickListener.onProfileClick(profile, context)
                 }
-            }
+            }*/
             .padding(10.dp)
             .size(200.dp, 200.dp),
         colors = CardColors(

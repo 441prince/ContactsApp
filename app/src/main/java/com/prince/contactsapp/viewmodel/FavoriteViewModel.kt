@@ -25,6 +25,8 @@ class FavoriteViewModel(
     private val navigateToNewActivity = MutableLiveData<Boolean>()
     private val favImageButton = MutableLiveData<Int>()
 
+    val updatedFavoriteContactList = MutableLiveData<List<Contact>>()
+
     // Declare profileId as a MutableLiveData so you can update it
     private val profileId = MutableLiveData<Long>()
 
@@ -97,6 +99,18 @@ class FavoriteViewModel(
         }
     }
 
+    fun getUpdatedFavoriteContacts(id: Long) {
+        viewModelScope.launch {
+            val updatedFavoriteContacts = withContext(Dispatchers.IO) {
+                contactRepository.getUpdatedFavoriteContacts(id)
+            }
+            Log.d("getUpdatedFavoriteContacts", "profileid = $id")
+            updatedFavoriteContacts.let {
+                updatedFavoriteContactList.value = it
+                Log.d("getUpdatedFavoriteContacts", "it = ${it.size}")
+            }
+        }
+    }
     fun insertContact(contact: Contact) = viewModelScope.launch {
         contactRepository.insert(contact)
     }

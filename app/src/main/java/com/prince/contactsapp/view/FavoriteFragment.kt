@@ -110,6 +110,10 @@ class FavoriteFragment : Fragment(), ItemClickListener {
 
     }
 
+    override fun onFavoriteContactFavIconClick(favoriteContact: Contact, context: Context) {
+
+    }
+
     override fun onResume() {
         super.onResume()
         //Toast.makeText(requireContext(), "Im FavoriteFragment", Toast.LENGTH_SHORT).show()

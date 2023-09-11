@@ -7,12 +7,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import androidx.viewpager.widget.ViewPager
 import com.prince.contactsapp.models.ContactRepository
 import com.prince.contactsapp.models.Profile
 import com.prince.contactsapp.models.ProfileRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,7 +35,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     // Method to select a profile
-    fun selectProfile(profileId: Long, viewPager: ViewPager) {
+    fun selectProfile(profileId: Long) {
         Log.d("ProfileViewModel", "selectProfile called with profileId: $profileId")
         viewModelScope.launch {
             /*// Deselect the currently selected profile (if any)
@@ -52,7 +53,15 @@ class ProfileViewModel @Inject constructor(
             repository.update(profile!!)*/
             Log.d("ProfileViewModel", "inside: $profileId")
             profileRepository.selectProfile(profileId)
-            viewPager.adapter?.notifyDataSetChanged()
+            val selectedProfile = withContext(Dispatchers.IO) {
+                profileRepository.getSelectedProfile()
+            }
+            Log.d("ContactViewModel", "Selected Profile: $selectedProfile")
+            // Update the profileId LiveData with the selected profile ID
+            selectedProfile?.let {
+                _selectedProfile.value = it
+            }
+            //viewPager.adapter?.notifyDataSetChanged()
         }
     }
 

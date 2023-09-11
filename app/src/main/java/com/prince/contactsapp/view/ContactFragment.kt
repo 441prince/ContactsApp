@@ -211,6 +211,10 @@ class ContactFragment : Fragment(), ItemClickListener {
     override fun onProfileLongClick(profile: Profile) {
     }
 
+    override fun onFavoriteContactFavIconClick(favoriteContact: Contact, context: Context) {
+
+    }
+
     override fun onResume() {
         super.onResume()
         //Toast.makeText(requireContext(), "Im contactFragment", Toast.LENGTH_SHORT).show()

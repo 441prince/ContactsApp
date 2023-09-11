@@ -13,9 +13,7 @@ import com.prince.contactsapp.models.Contact
 import com.prince.contactsapp.models.ContactRepository
 import com.prince.contactsapp.models.ProfileRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 class ContactViewModel(
@@ -28,6 +26,7 @@ class ContactViewModel(
 
     // Create a MutableLiveData to hold the search query
     private val searchQuery = MutableLiveData<String>()
+    val updatedContactList = MutableLiveData<List<Contact>>()
 
     // Observe profileId and update profileContacts using switchMap
     val profileContacts: LiveData<List<Contact>> = profileId.switchMap { id ->
@@ -123,6 +122,17 @@ class ContactViewModel(
 
     fun insertContact(contact: Contact) = viewModelScope.launch {
         contactRepository.insert(contact)
+    }
+
+    fun getContactsUpdatedForProfile(id: Long) {
+        viewModelScope.launch {
+            val updatedContacts = withContext(Dispatchers.IO) {
+                contactRepository.getAllUpdatedContactsByProfileId(id)
+            }
+            updatedContacts.let {
+                updatedContactList.value = it
+            }
+        }
     }
 }
 

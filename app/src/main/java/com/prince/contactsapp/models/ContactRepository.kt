@@ -55,6 +55,14 @@ class ContactRepository(private val contactDao: ContactDao) {
         return contactDao.getAllContactByProfileId(profileId)
     }
 
+    fun getAllUpdatedContactsByProfileId(profileId: Long): List<Contact> {
+        return contactDao.getAllUpdatedContactByProfileId(profileId)
+    }
+
+    fun getUpdatedFavoriteContacts(profileId: Long): List<Contact> {
+        return contactDao.getUpdatedFavoriteContacts(profileId)
+    }
+
     fun searchContactsByProfileId(profileId: Long, query: String): LiveData<List<Contact>> {
         return contactDao.searchContactsByProfileId(profileId, "%$query%") // Modify the query as needed
     }

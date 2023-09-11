@@ -37,6 +37,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,9 +49,11 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
@@ -78,6 +82,8 @@ fun AddViewEditProfileScreenPreview() {
 class AddViewEditProfileActivity : ComponentActivity() {
 
     private lateinit var addViewEditProfileViewModel: AddViewEditProfileViewModel
+    private var refreshState by mutableIntStateOf(0)
+    var selectedImageUri : Uri? = null
 
     private val PICK_IMAGE = 1
     private val CAPTURE_IMAGE = 2
@@ -103,6 +109,8 @@ class AddViewEditProfileActivity : ComponentActivity() {
             Toast.makeText(this, extras.getString("profile_id"), Toast.LENGTH_SHORT).show()
             if (profileID != null) {
                 addViewEditProfileViewModel.displayProfile(profileID!!)
+                selectedImageUri = addViewEditProfileViewModel.displayImageUri.value?.toUri()
+                //Toast.makeText(this,"$selectedImageUri", Toast.LENGTH_SHORT).show()
 
             } else {
                 //binding.AddContactSubmitButton.visibility = View.VISIBLE
@@ -116,6 +124,29 @@ class AddViewEditProfileActivity : ComponentActivity() {
             //checkPermissionAndPickImage()
         }
 
+        // Observe the selectedImageUri LiveData
+        addViewEditProfileViewModel.displayImageUri.observe(this, Observer { uri ->
+            uri?.let {
+                // Display the selected image using an ImageView or load it using Glide
+                this.selectedImageUri = uri.toUri()
+                //Toast.makeText(this,"observed $selectedImageUri", Toast.LENGTH_SHORT).show()
+                updateRefreshState(refreshState)
+            }
+        })
+
+        addViewEditProfileViewModel.navigateToAnotherActivity.observe(this, Observer { shouldNavigate ->
+            if (shouldNavigate) {
+                // Reset the LiveData value to prevent repeated navigation
+                addViewEditProfileViewModel.navigateToAnotherActivity.value = false
+
+                //onBackPressed();
+                // Create an Intent to navigate to another activity
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+                finish()
+            }
+        })
+
         setContent {
             ContactsAppTheme {
                 // Create a NavHostController
@@ -123,6 +154,8 @@ class AddViewEditProfileActivity : ComponentActivity() {
                 AddViewEditProfileScreen(
                     addViewEditProfileViewModel,
                     profileID,
+                    refreshState,
+                    selectedImageUri,
                     this
                 )
             }
@@ -199,6 +232,14 @@ class AddViewEditProfileActivity : ComponentActivity() {
         private const val PERMISSION_CODE = 1001
     }
 
+    private fun updateRefreshState(state: Int) {
+        if (state<10) {
+            refreshState ++
+        } else if (state>=10) {
+            refreshState = 0
+        }
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
@@ -209,6 +250,9 @@ class AddViewEditProfileActivity : ComponentActivity() {
                         // Copy the picked image to the app's directory
                         if (pickedImageUri != null) {
                             addViewEditProfileViewModel.copyPickedImageToAppDirectory(pickedImageUri)
+                            this.selectedImageUri = pickedImageUri
+                            updateRefreshState(refreshState)
+                            //Toast.makeText(this, "$selectedImageUri", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -216,6 +260,9 @@ class AddViewEditProfileActivity : ComponentActivity() {
                 CAPTURE_IMAGE -> {
                     // Image captured from camera, use the selectedImageUri from the ViewModel
                     addViewEditProfileViewModel.selectedImageUri.value?.let { selectedImageUri ->
+                        this.selectedImageUri = selectedImageUri
+                        updateRefreshState(refreshState)
+                        //Toast.makeText(this, "$selectedImageUri", Toast.LENGTH_SHORT).show()
                         // You can use the selectedImageUri to display the captured image
                         // For example, with Glide or setImageURI on an ImageView
                         //binding.selectProfileImage.setImageURI(selectedImageUri)
@@ -231,14 +278,25 @@ class AddViewEditProfileActivity : ComponentActivity() {
 fun AddViewEditProfileScreen(
     addViewEditProfileViewModel: AddViewEditProfileViewModel,
     profileId: Long?,
+    refreshState: Int,
+    selectedImageUri: Uri?,
     addViewEditProfileActivity: AddViewEditProfileActivity
 ) {
     val context = LocalContext.current
 
     var isEditing by remember { mutableStateOf(profileId == null) }
 
-    val selectedImageUri = addViewEditProfileViewModel.displayImageUri.value?.toUri()
+
     val selectedImagePainter = rememberAsyncImagePainter(selectedImageUri)
+
+    /*// Observe the selectedImageUri LiveData
+    addViewEditProfileViewModel.selectedImageUri.observe(addViewEditProfileActivity, Observer { uri ->
+        uri?.let {
+            Toast.makeText(addViewEditProfileActivity, "uri 1", Toast.LENGTH_SHORT).show()
+            selectedImageUri = uri
+        }
+    })*/
+
 
     Scaffold(
         topBar = {
@@ -248,6 +306,8 @@ fun AddViewEditProfileScreen(
                     IconButton(
                         onClick = {
                             //navController.popBackStack()
+                            //onBackPressed()
+                            addViewEditProfileActivity.onBackPressed()
                         }
                     ) {
                         Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
@@ -267,25 +327,32 @@ fun AddViewEditProfileScreen(
                     imageUri = selectedImageUri,
                     painter = selectedImagePainter,
                     isEditing = isEditing,
-                    onImageClicked = { addViewEditProfileActivity.checkPermissionAndPickImage() },
+                    onImageClicked = { if (isEditing || profileId == null) addViewEditProfileActivity.checkPermissionAndPickImage() },
                     profileId
                 )
 
-                val profileName = addViewEditProfileViewModel.inputName.value ?: ""
-                val onProfileNameChange: (String) -> Unit = { name ->
+                //val profileName =
+                var onProfileNameChange: (String) -> Unit = { name ->
                     addViewEditProfileViewModel.inputName.value = name
                 }
+                var profileName by remember { mutableStateOf(TextFieldValue(text = addViewEditProfileViewModel.inputName.value ?: "")) }
 
                 ProfileNameField(
                     profileName = profileName,
-                    onProfileNameChange = onProfileNameChange,
+                    onProfileNameChange = {
+                        addViewEditProfileViewModel.inputName.value = it.text
+                        profileName = it},
                     isEditing = isEditing
                 )
 
-                if (isEditing) {
+                if (isEditing || profileId == null) {
                     EditableProfileButtons(
                         onSaveButtonClick = {
-                            addViewEditProfileViewModel.editOrUpdateProfileButton()
+                            if (profileId == null) {
+                                addViewEditProfileViewModel.addProfile()
+                            } else {
+                                addViewEditProfileViewModel.editOrUpdateProfileButton()
+                            }
                             //navController.popBackStack()
                         }
                     )
@@ -293,6 +360,14 @@ fun AddViewEditProfileScreen(
                     NonEditableProfileButtons(
                         onEditButtonClick = {
                             isEditing = true
+                        }
+                    )
+                }
+
+                if (profileId != null) {
+                    DeleteProfileButton(
+                        onDeleteButtonClick = {
+                            addViewEditProfileViewModel.deleteProfile()
                         }
                     )
                 }
@@ -355,8 +430,8 @@ fun ProfileImage(
 
 @Composable
 fun ProfileNameField(
-    profileName: String,
-    onProfileNameChange: (String) -> Unit,
+    profileName: TextFieldValue,
+    onProfileNameChange: (TextFieldValue) -> Unit,
     isEditing: Boolean
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -374,6 +449,7 @@ fun ProfileNameField(
                     keyboardController?.hide()
                 }
             ),
+            textStyle = TextStyle(fontSize = 16.sp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
@@ -383,7 +459,7 @@ fun ProfileNameField(
         )
     } else {
         Text(
-            text = profileName,
+            text = profileName.text,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
@@ -411,6 +487,18 @@ fun NonEditableProfileButtons(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(text = "Edit")
+    }
+}
+
+@Composable
+fun DeleteProfileButton(
+    onDeleteButtonClick: () -> Unit
+) {
+    Button(
+        onClick = onDeleteButtonClick,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(text = "Delete")
     }
 }
 

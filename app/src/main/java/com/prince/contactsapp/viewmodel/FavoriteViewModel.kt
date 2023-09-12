@@ -46,7 +46,7 @@ class FavoriteViewModel(
             val selectedProfile = withContext(Dispatchers.IO) {
                 profileRepository.getSelectedProfile()
             }
-            Log.d("ContactViewModel", "Selected Profile: $selectedProfile")
+            Log.d("FavoriteContactViewModel", "Selected Profile: $selectedProfile")
             // Update the profileId LiveData with the selected profile ID
             selectedProfile?.let {
                 profileId.value = it.id
@@ -107,7 +107,8 @@ class FavoriteViewModel(
             Log.d("getUpdatedFavoriteContacts", "profileid = $id")
             updatedFavoriteContacts.let {
                 updatedFavoriteContactList.value = it
-                Log.d("getUpdatedFavoriteContacts", "it = ${it.size}")
+                Log.d("UpdatedFavContacts", "list = $it")
+                //Log.d("getUpdatedFavoriteContacts", "it = ${it.size}")
             }
         }
     }

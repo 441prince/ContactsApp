@@ -84,6 +84,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
     private lateinit var addViewEditProfileViewModel: AddViewEditProfileViewModel
     private var refreshState by mutableIntStateOf(0)
     var selectedImageUri : Uri? = null
+    var profileName by mutableStateOf("")
 
     private val PICK_IMAGE = 1
     private val CAPTURE_IMAGE = 2
@@ -130,8 +131,15 @@ class AddViewEditProfileActivity : ComponentActivity() {
                 // Display the selected image using an ImageView or load it using Glide
                 this.selectedImageUri = uri.toUri()
                 //Toast.makeText(this,"observed $selectedImageUri", Toast.LENGTH_SHORT).show()
-                updateRefreshState(refreshState)
+                refreshState = updateRefreshState(refreshState)
             }
+        })
+
+        addViewEditProfileViewModel.inputName.observe(this, Observer {
+            profileName = it
+            //Toast.makeText(this,"observed $profileName $refreshState", Toast.LENGTH_SHORT).show()
+            refreshState = updateRefreshState(refreshState)
+            //Toast.makeText(this,"observed $profileName $refreshState", Toast.LENGTH_SHORT).show()
         })
 
         addViewEditProfileViewModel.navigateToAnotherActivity.observe(this, Observer { shouldNavigate ->
@@ -147,6 +155,14 @@ class AddViewEditProfileActivity : ComponentActivity() {
             }
         })
 
+        addViewEditProfileViewModel.errorMessage.observe(this, Observer { message ->
+            if (!message.isNullOrEmpty()) {
+                // Show the error message to the user, e.g., using a Toast or a TextView
+                refreshState = updateRefreshState(refreshState)
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+            }
+        })
+
         setContent {
             ContactsAppTheme {
                 // Create a NavHostController
@@ -156,6 +172,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
                     profileID,
                     refreshState,
                     selectedImageUri,
+                    profileName,
                     this
                 )
             }
@@ -232,14 +249,6 @@ class AddViewEditProfileActivity : ComponentActivity() {
         private const val PERMISSION_CODE = 1001
     }
 
-    private fun updateRefreshState(state: Int) {
-        if (state<10) {
-            refreshState ++
-        } else if (state>=10) {
-            refreshState = 0
-        }
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
@@ -251,7 +260,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
                         if (pickedImageUri != null) {
                             addViewEditProfileViewModel.copyPickedImageToAppDirectory(pickedImageUri)
                             this.selectedImageUri = pickedImageUri
-                            updateRefreshState(refreshState)
+                            refreshState =  updateRefreshState(refreshState)
                             //Toast.makeText(this, "$selectedImageUri", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -261,7 +270,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
                     // Image captured from camera, use the selectedImageUri from the ViewModel
                     addViewEditProfileViewModel.selectedImageUri.value?.let { selectedImageUri ->
                         this.selectedImageUri = selectedImageUri
-                        updateRefreshState(refreshState)
+                        refreshState = updateRefreshState(refreshState)
                         //Toast.makeText(this, "$selectedImageUri", Toast.LENGTH_SHORT).show()
                         // You can use the selectedImageUri to display the captured image
                         // For example, with Glide or setImageURI on an ImageView
@@ -273,6 +282,16 @@ class AddViewEditProfileActivity : ComponentActivity() {
     }
 }
 
+private fun updateRefreshState(state: Int): Int {
+    var refreshState = state
+    if (state<10) {
+        refreshState ++
+    } else if (state>=10) {
+        refreshState = 0
+    }
+    return refreshState
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddViewEditProfileScreen(
@@ -280,6 +299,7 @@ fun AddViewEditProfileScreen(
     profileId: Long?,
     refreshState: Int,
     selectedImageUri: Uri?,
+    profileName: String?,
     addViewEditProfileActivity: AddViewEditProfileActivity
 ) {
     val context = LocalContext.current
@@ -335,7 +355,7 @@ fun AddViewEditProfileScreen(
                 var onProfileNameChange: (String) -> Unit = { name ->
                     addViewEditProfileViewModel.inputName.value = name
                 }
-                var profileName by remember { mutableStateOf(TextFieldValue(text = addViewEditProfileViewModel.inputName.value ?: "")) }
+                var profileName by remember { mutableStateOf(TextFieldValue(text = profileName ?: "")) }
 
                 ProfileNameField(
                     profileName = profileName,

@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity(), ItemClickListener {
     private val profileList: ArrayList<Profile> = ArrayList() // Initialize an empty list
     private val contactList: ArrayList<Contact> = ArrayList()
     private val favoriteContactList: ArrayList<Contact> = ArrayList()
+    private val currentProfileId by mutableIntStateOf(0)
 
     // MutableState to trigger recomposition
     private var refreshState by mutableIntStateOf(0)
@@ -88,7 +89,7 @@ class MainActivity : ComponentActivity(), ItemClickListener {
 
 
         profileViewModel.getAllProfiles().observe(this, Observer { profiles ->
-            updateRefreshState(refreshState)
+            refreshState = updateRefreshState(refreshState)
             profileList.clear()
             profileList.addAll(profiles)
         })
@@ -102,19 +103,22 @@ class MainActivity : ComponentActivity(), ItemClickListener {
                 favoriteViewModel.getUpdatedFavoriteContacts(selectedProfile.id)
             } else {
                 // No profile is selected, handle this case as needed
-                Toast.makeText(this, "No profile is selected", Toast.LENGTH_SHORT).show()
+                /*Toast.makeText(this, "No profile is selected", Toast.LENGTH_SHORT).show()*/
             }
         })
+
+
 
         contactViewModel.profileContacts.observe(this, Observer { contacts ->
             contactList.clear()
             contactList.addAll(contacts)
+            /*Toast.makeText(this, "profile contact: ${contacts.size}", Toast.LENGTH_SHORT).show()*/
         })
 
         contactViewModel.updatedContactList.observe(this, Observer { updatedContacts ->
             contactList.clear()
             contactList.addAll(updatedContacts )
-            //Toast.makeText(this, "updated profile contact: ${updatedContacts.size}", Toast.LENGTH_SHORT).show()
+            /*Toast.makeText(this, "updated profile contact: ${updatedContacts.size}", Toast.LENGTH_SHORT).show()*/
         })
 
         // Observe searchResults LiveData
@@ -126,14 +130,15 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         favoriteViewModel.favoriteContacts.observe(this, Observer { favoriteContacts ->
             favoriteContactList.clear()
             favoriteContactList.addAll(favoriteContacts)
+            /*Toast.makeText(this, "Favorite contact: ${favoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()*/
         })
 
         favoriteViewModel.updatedFavoriteContactList.observe(this, Observer { updatedFavoriteContacts ->
             favoriteContactList.clear()
             favoriteContactList.addAll(updatedFavoriteContacts)
-            updateRefreshState(refreshState)
-            Log.d("updatedFavoriteContactList" ," updatedFavoriteContactList.observe: ${updatedFavoriteContacts.size} ${favoriteContactList} ")
-            //Toast.makeText(this, "Favorite contact: ${updatedFavoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()
+            Log.d("updatedFavoContacts" ,"observe: ${favoriteContactList} ")
+            refreshState = updateRefreshState(refreshState)
+            /*Toast.makeText(this, "Favorite updated: ${updatedFavoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()*/
         })
 
         setContent {
@@ -155,13 +160,6 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         }
     }
 
-    private fun updateRefreshState(state: Int) {
-        if (state<10) {
-            refreshState ++
-        } else if (state>=10) {
-            refreshState = 0
-        }
-    }
 
     override fun onContactClick(contact: Contact, context: Context) {
         // Create an Intent to open the EditContactActivity
@@ -206,6 +204,16 @@ class MainActivity : ComponentActivity(), ItemClickListener {
     }
 }
 
+private fun updateRefreshState(state: Int): Int {
+    var refreshState = state
+    if (refreshState<10) {
+        refreshState ++
+    } else if (refreshState>=10) {
+        refreshState = 0
+    }
+    return refreshState
+}
+
 @Composable
 fun MainActivityContent(
     navController: NavHostController,
@@ -241,6 +249,7 @@ fun MainActivityContent(
 
             composable("addProfile") {
                 //AddProfileScreen(navController = navController)
+                //updateRefreshState(refreshState)
             }
         }
 
@@ -256,8 +265,6 @@ fun MainActivityContent(
         )
     }
 }
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -371,10 +378,12 @@ fun MainContent(
                 }
 
                 "contacts" -> {
+                    profileViewModel.getSelectedProfile()
                     ContactTab(navController, profiles, contacts, contactViewModel, mainActivity)
                 }
 
                 "favorites" -> {
+                    profileViewModel.getSelectedProfile()
                     FavoriteTab(navController, profiles, favoriteContacts, favoriteViewModel, mainActivity, contactViewModel)
                 }
 

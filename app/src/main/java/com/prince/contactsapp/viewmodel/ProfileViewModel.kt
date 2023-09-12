@@ -34,6 +34,20 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
+    fun getSelectedProfile() {
+        viewModelScope.launch {
+            val selectedProfile = withContext(Dispatchers.IO) {
+                profileRepository.getSelectedProfile()
+            }
+            Log.d("ContactViewModel", "Selected Profile: $selectedProfile")
+            // Update the profileId LiveData with the selected profile ID
+            selectedProfile?.let {
+                _selectedProfile.value = null
+                _selectedProfile.value = it
+            }
+        }
+    }
+
     // Method to select a profile
     fun selectProfile(profileId: Long) {
         Log.d("ProfileViewModel", "selectProfile called with profileId: $profileId")

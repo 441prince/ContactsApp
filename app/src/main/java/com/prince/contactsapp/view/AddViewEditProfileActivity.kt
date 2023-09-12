@@ -107,7 +107,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
         val extras = intent.extras
         if (extras != null) {
             profileID = extras.getString("profile_id")?.toLong()
-            Toast.makeText(this, extras.getString("profile_id"), Toast.LENGTH_SHORT).show()
+            //Toast.makeText(this, extras.getString("profile_id"), Toast.LENGTH_SHORT).show()
             if (profileID != null) {
                 addViewEditProfileViewModel.displayProfile(profileID!!)
                 selectedImageUri = addViewEditProfileViewModel.displayImageUri.value?.toUri()

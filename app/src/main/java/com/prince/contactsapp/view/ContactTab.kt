@@ -208,7 +208,7 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
                         //itemClickListener.onFavoriteButtonClick()
                         contact.isFavorite = !contact.isFavorite
                         isFavorite = !isFavorite
-                        Toast.makeText(context, "$contact , $isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
+                        //Toast.makeText(context, "$contact , $isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
                         contactViewModel.updateContactAndNotify(contact)
                         //painter = painterResource(id = R.drawable.filledheart)
                     }

@@ -55,7 +55,7 @@ fun FavoriteTab(
     itemClickListener: ItemClickListener,
     contactViewModel: ContactViewModel
 ) {
-    Log.d("ProfileTab", profiles.toString())
+    Log.d("FT FavoriteTab" ,"FavoriteTab() Called")
     FavoriteContactList(navController, profiles, favoriteContacts, favoriteViewModel, itemClickListener)
 
 }
@@ -68,7 +68,6 @@ fun FavoriteContactList(
     favoriteViewModel: FavoriteViewModel,
     itemClickListener: ItemClickListener,
 ) {
-    Log.d("FavoriteContactsList", favoriteContacts.toString())
     if (favoriteContacts.isEmpty()) {
         Log.d("favoriteContactsList", "The list is empty.")
     }
@@ -173,13 +172,13 @@ fun FavoriteContactCard(favoriteContact: Contact, itemClickListener: ItemClickLi
                     .padding(5.dp)
                     .clickable {
                         //itemClickListener.onFavoriteButtonClick()
-
+                        Log.d("FT FavoriteTab" ,"FavoriteButton onclick Called")
                         favoriteContact.isFavorite = !favoriteContact.isFavorite
-                        itemClickListener.onFavoriteContactFavIconClick(favoriteContact, context = context)
 
                         //Toast.makeText(context, "$isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
-                        favoriteViewModel.updateContactAndNotify(favoriteContact)
-                        favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
+                        //favoriteViewModel.updateContactAndNotify(favoriteContact)
+                        //favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
+                        itemClickListener.onFavoriteContactFavIconClick(favoriteContact, context = context)
 
                         //painter = painterResource(id = R.drawable.filledheart)
                     }

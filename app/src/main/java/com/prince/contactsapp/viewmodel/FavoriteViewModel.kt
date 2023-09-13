@@ -58,6 +58,7 @@ class FavoriteViewModel(
         viewModelScope.launch {
             // Update the contact in the Room database
             contactRepository.update(contact)
+            profileId.value = contact.profileId
 
             /*// Notify the LiveData on the main thread
             // Notify the LiveData on the main thread

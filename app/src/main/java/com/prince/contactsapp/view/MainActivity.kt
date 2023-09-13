@@ -89,6 +89,7 @@ class MainActivity : ComponentActivity(), ItemClickListener {
 
 
         profileViewModel.getAllProfiles().observe(this, Observer { profiles ->
+            Log.d("MA getAllProfiles()" ,"observe: ${profiles.size} ")
             refreshState = updateRefreshState(refreshState)
             profileList.clear()
             profileList.addAll(profiles)
@@ -99,6 +100,7 @@ class MainActivity : ComponentActivity(), ItemClickListener {
             // Handle the selected profile change here
             if (selectedProfile != null) {
                 //Toast.makeText(this, "Profile Switched to ${selectedProfile.name}", Toast.LENGTH_SHORT).show()
+                Log.d("MA selectedProfile" ,"observe: ${selectedProfile.id} ")
                 contactViewModel.getContactsUpdatedForProfile(selectedProfile.id)
                 favoriteViewModel.getUpdatedFavoriteContacts(selectedProfile.id)
             } else {
@@ -112,12 +114,14 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         contactViewModel.profileContacts.observe(this, Observer { contacts ->
             contactList.clear()
             contactList.addAll(contacts)
+            Log.d("MA profileContacts" ,"observe: ${contacts.size} ")
             /*Toast.makeText(this, "profile contact: ${contacts.size}", Toast.LENGTH_SHORT).show()*/
         })
 
         contactViewModel.updatedContactList.observe(this, Observer { updatedContacts ->
             contactList.clear()
             contactList.addAll(updatedContacts )
+            Log.d("MA updatedContactList" ,"observe: ${updatedContacts.size} ")
             /*Toast.makeText(this, "updated profile contact: ${updatedContacts.size}", Toast.LENGTH_SHORT).show()*/
         })
 
@@ -125,18 +129,21 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         contactViewModel.searchResults.observe(this, Observer { searchResults ->
             contactList.clear()
             contactList.addAll(searchResults)
+            Log.d("MA searchResults" ,"observe: ${searchResults.size} ")
         })
 
         favoriteViewModel.favoriteContacts.observe(this, Observer { favoriteContacts ->
             favoriteContactList.clear()
             favoriteContactList.addAll(favoriteContacts)
+            refreshState = updateRefreshState(refreshState)
+            Log.d("MA favoriteContacts" ,"observe: ${favoriteContacts.size} ")
             /*Toast.makeText(this, "Favorite contact: ${favoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()*/
         })
 
         favoriteViewModel.updatedFavoriteContactList.observe(this, Observer { updatedFavoriteContacts ->
             favoriteContactList.clear()
             favoriteContactList.addAll(updatedFavoriteContacts)
-            Log.d("updatedFavoContacts" ,"observe: ${favoriteContactList} ")
+            Log.d("MA updatedFavoriteContacts" ,"observe: ${updatedFavoriteContacts.size} ")
             refreshState = updateRefreshState(refreshState)
             /*Toast.makeText(this, "Favorite updated: ${updatedFavoriteContacts.size} $favoriteContactList", Toast.LENGTH_SHORT).show()*/
         })
@@ -188,7 +195,13 @@ class MainActivity : ComponentActivity(), ItemClickListener {
         refreshActivity(this)
     }
 
-    override fun onFavoriteContactFavIconClick(favoriteContact: Contact, context: Context) {
+    override fun onFavoriteContactFavIconClick(contact: Contact, context: Context) {
+        //profileViewModel.getSelectedProfile()
+
+        contactViewModel.updateContactAndNotify(contact)
+        favoriteViewModel.updateContactAndNotify(contact)
+        //contactViewModel.getContactsUpdatedForProfile(contact.profileId)
+        //favoriteViewModel.getUpdatedFavoriteContacts(contact.profileId)
         //contactViewModel.getContactsUpdatedForProfile(favoriteContact.profileId)
 //        updateRefreshState(refreshState)
 //        favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
@@ -226,6 +239,7 @@ fun MainActivityContent(
     favoriteViewModel: FavoriteViewModel,
     refreshState: Int
 ) {
+    Log.d("MA MainActivityContent" ,"MainActivityContent Called")
     ContactsAppTheme {
         // Set up the NavHost with tabs
         NavHost(
@@ -378,12 +392,12 @@ fun MainContent(
                 }
 
                 "contacts" -> {
-                    profileViewModel.getSelectedProfile()
+                    //profileViewModel.getSelectedProfile()
                     ContactTab(navController, profiles, contacts, contactViewModel, mainActivity)
                 }
 
                 "favorites" -> {
-                    profileViewModel.getSelectedProfile()
+                    //profileViewModel.getSelectedProfile()
                     FavoriteTab(navController, profiles, favoriteContacts, favoriteViewModel, mainActivity, contactViewModel)
                 }
 

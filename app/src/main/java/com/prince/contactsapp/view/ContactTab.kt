@@ -61,7 +61,7 @@ fun ContactTab(
     contactViewModel: ContactViewModel,
     itemClickListener: ItemClickListener
 ) {
-    Log.d("ContactTab", profiles.toString())
+    Log.d("CT ContactTab" ,"ContactTab Called")
     ContactList(navController, profiles, contacts, contactViewModel, itemClickListener)
 
 }
@@ -104,6 +104,7 @@ fun ContactList(
 
         FloatingActionButton(
             onClick = {
+                Log.d("CT ContactTab" ,"FloatingActionButton Called")
                 val intent = Intent(context, AddNewContactActivity::class.java)
                 /*// Put your extras here
                 intent.putExtra("key1", "value1")
@@ -206,10 +207,12 @@ fun ContactCard(contact: Contact, itemClickListener: ItemClickListener, contactV
                     .padding(5.dp)
                     .clickable {
                         //itemClickListener.onFavoriteButtonClick()
+                        Log.d("CT ContactTab" ,"FavoriteButton onclick Called")
+                        itemClickListener.onFavoriteContactFavIconClick(contact, context = context)
                         contact.isFavorite = !contact.isFavorite
                         isFavorite = !isFavorite
                         //Toast.makeText(context, "$contact , $isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
-                        contactViewModel.updateContactAndNotify(contact)
+                        //contactViewModel.updateContactAndNotify(contact)
                         //painter = painterResource(id = R.drawable.filledheart)
                     }
             )

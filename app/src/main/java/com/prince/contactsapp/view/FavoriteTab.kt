@@ -25,9 +25,15 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.MaterialTheme
@@ -82,13 +88,13 @@ fun FavoriteContactList(
             .wrapContentHeight()
             .fillMaxWidth()
     ) {
-        LazyColumn(
+        LazyVerticalGrid(
             modifier = Modifier
                 .height(heightInDp)
-                .align(Alignment.Center),
+                .align(Alignment.TopStart),
             //.padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top,
+            columns = GridCells.Fixed(2),
             userScrollEnabled = true
         ) {
             itemsIndexed(favoriteContacts) { index, favoriteContact ->
@@ -130,7 +136,7 @@ fun FavoriteContactCard(favoriteContact: Contact, itemClickListener: ItemClickLi
             .clickable {
                 itemClickListener.onContactClick(favoriteContact, context)
             }
-            .padding(10.dp)
+            .padding(1.dp)
             .size(200.dp, 200.dp),
         colors = CardColors(
             containerColor = Color.White,
@@ -147,48 +153,71 @@ fun FavoriteContactCard(favoriteContact: Contact, itemClickListener: ItemClickLi
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
 
-            // Display the image
-            Image(
-                painter = imagePainter,
-                contentDescription = "Profile Image",
-                contentScale = ContentScale.Crop,
+            Row(
                 modifier = Modifier
-                    .size(130.dp)
-                    .clip(CircleShape)
-                    .border(
-                        width = 2.dp, // Border width
-                        color = MaterialTheme.colorScheme.primary, // Border color
-                        shape = CircleShape
-                    )
-                    .background(MaterialTheme.colorScheme.primary)
-            )
+                    .fillMaxWidth()
+                    .padding(0.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-            Image(
-                painter = painterResource(id = if (favoriteContact.isFavorite) R.drawable.filledheart else R.drawable.emptyheart), //R.drawable.filledheart),
-                contentDescription = "Favorite",
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(Color.Transparent, CircleShape)
-                    .padding(5.dp)
-                    .clickable {
-                        //itemClickListener.onFavoriteButtonClick()
-                        Log.d("FT FavoriteTab" ,"FavoriteButton onclick Called")
-                        favoriteContact.isFavorite = !favoriteContact.isFavorite
+                Spacer(modifier = Modifier.width(30.dp))
 
-                        //Toast.makeText(context, "$isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
-                        //favoriteViewModel.updateContactAndNotify(favoriteContact)
-                        //favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
-                        itemClickListener.onFavoriteContactFavIconClick(favoriteContact, context = context)
+                // Display the image
+                Image(
+                    painter = imagePainter,
+                    contentDescription = "Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(100.dp)
+                        .align(Alignment.Top)
+                        .clip(CircleShape)
+                        .border(
+                            width = 2.dp, // Border width
+                            color = MaterialTheme.colorScheme.primary, // Border color
+                            shape = CircleShape
+                        )
+                        .background(MaterialTheme.colorScheme.primary)
+                )
 
-                        //painter = painterResource(id = R.drawable.filledheart)
-                    }
-            )
+                Image(
+                    painter = painterResource(id = if (favoriteContact.isFavorite) R.drawable.filledheart else R.drawable.emptyheart), //R.drawable.filledheart),
+                    contentDescription = "Favorite",
+                    modifier = Modifier
+                        .size(30.dp)
+                        .align(Alignment.Top)
+                        .background(Color.Transparent, CircleShape)
+                        .padding(5.dp)
+                        .clickable {
+                            //itemClickListener.onFavoriteButtonClick()
+                            Log.d("FT FavoriteTab", "FavoriteButton onclick Called")
+                            favoriteContact.isFavorite = !favoriteContact.isFavorite
+
+                            //Toast.makeText(context, "$isFavorite, ${contact.isFavorite}", Toast.LENGTH_SHORT).show()
+                            //favoriteViewModel.updateContactAndNotify(favoriteContact)
+                            //favoriteViewModel.getUpdatedFavoriteContacts(favoriteContact.profileId)
+                            itemClickListener.onFavoriteContactFavIconClick(
+                                favoriteContact,
+                                context = context
+                            )
+
+                            //painter = painterResource(id = R.drawable.filledheart)
+                        }
+                )
+            }
 
             Text(
                 text = favoriteContact.name,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 5.dp),
+                textAlign = TextAlign.Center,
+            )
+
+            Text(
+                text = favoriteContact.phoneNumber,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 5.dp),
                 textAlign = TextAlign.Center,
             )
         }

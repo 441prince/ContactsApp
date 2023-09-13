@@ -64,7 +64,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.prince.contactsapp.models.AppDatabase
@@ -73,9 +72,6 @@ import com.prince.contactsapp.models.ProfileRepository
 import com.prince.contactsapp.view.ui.theme.ContactsAppTheme
 import com.prince.contactsapp.viewmodel.AddViewEditProfileViewModel
 import com.prince.contactsapp.viewmodel.AddViewEditProfileViewModelFactory
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-
 
 @Preview
 @Composable
@@ -366,7 +362,7 @@ fun AddViewEditProfileScreen(
 
                 var profileName by remember { mutableStateOf(TextFieldValue(text = profileNameStr ?: "")) }
                 //Log.d("AVEPA before" ,"profileName $profileName")
-                if (profileNameStr != null)
+                if (profileName == TextFieldValue("") && !isEditing && profileNameStr != null)
                 {
                     profileName = TextFieldValue(text = profileNameStr!!)
                     //Log.d("AVEPA if" ,"profileName $profileName")

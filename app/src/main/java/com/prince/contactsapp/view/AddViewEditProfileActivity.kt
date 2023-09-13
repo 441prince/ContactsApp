@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -63,6 +64,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.prince.contactsapp.models.AppDatabase
@@ -71,6 +73,8 @@ import com.prince.contactsapp.models.ProfileRepository
 import com.prince.contactsapp.view.ui.theme.ContactsAppTheme
 import com.prince.contactsapp.viewmodel.AddViewEditProfileViewModel
 import com.prince.contactsapp.viewmodel.AddViewEditProfileViewModelFactory
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 @Preview
@@ -107,6 +111,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
         val extras = intent.extras
         if (extras != null) {
             profileID = extras.getString("profile_id")?.toLong()
+            Log.d("AVEPA onCreate" ,"extras: ${profileID} ")
             //Toast.makeText(this, extras.getString("profile_id"), Toast.LENGTH_SHORT).show()
             if (profileID != null) {
                 addViewEditProfileViewModel.displayProfile(profileID!!)
@@ -131,6 +136,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
                 // Display the selected image using an ImageView or load it using Glide
                 this.selectedImageUri = uri.toUri()
                 //Toast.makeText(this,"observed $selectedImageUri", Toast.LENGTH_SHORT).show()
+                Log.d("AVEPA displayImageUri" ,"observe: $uri ")
                 refreshState = updateRefreshState(refreshState)
             }
         })
@@ -138,6 +144,7 @@ class AddViewEditProfileActivity : ComponentActivity() {
         addViewEditProfileViewModel.inputName.observe(this, Observer {
             profileName = it
             //Toast.makeText(this,"observed $profileName $refreshState", Toast.LENGTH_SHORT).show()
+            Log.d("AVEPA inputName" ,"observe: $it ")
             refreshState = updateRefreshState(refreshState)
             //Toast.makeText(this,"observed $profileName $refreshState", Toast.LENGTH_SHORT).show()
         })
@@ -299,9 +306,10 @@ fun AddViewEditProfileScreen(
     profileId: Long?,
     refreshState: Int,
     selectedImageUri: Uri?,
-    profileName: String?,
+    profileNameStr: String?,
     addViewEditProfileActivity: AddViewEditProfileActivity
 ) {
+    Log.d("AVEPA AddViewEditProfileScreen" ,"AddViewEditProfileScreen called $profileNameStr")
     val context = LocalContext.current
 
     var isEditing by remember { mutableStateOf(profileId == null) }
@@ -355,7 +363,15 @@ fun AddViewEditProfileScreen(
                 var onProfileNameChange: (String) -> Unit = { name ->
                     addViewEditProfileViewModel.inputName.value = name
                 }
-                var profileName by remember { mutableStateOf(TextFieldValue(text = profileName ?: "")) }
+
+                var profileName by remember { mutableStateOf(TextFieldValue(text = profileNameStr ?: "")) }
+                //Log.d("AVEPA before" ,"profileName $profileName")
+                if (profileNameStr != null)
+                {
+                    profileName = TextFieldValue(text = profileNameStr!!)
+                    //Log.d("AVEPA if" ,"profileName $profileName")
+                }
+                //Log.d("AVEPA" ,"profileName $profileName")
 
                 ProfileNameField(
                     profileName = profileName,
@@ -454,6 +470,7 @@ fun ProfileNameField(
     onProfileNameChange: (TextFieldValue) -> Unit,
     isEditing: Boolean
 ) {
+    Log.d("AVEPA" ,"ProfileNameField $profileName")
     val keyboardController = LocalSoftwareKeyboardController.current
 
     if (isEditing) {
